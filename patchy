@@ -1,0 +1,29 @@
+diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
+index 69e875e..8695adc 100644
+--- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
++++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
+@@ -819,6 +819,17 @@ public static class Profile
+                 process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
+             }
+ 
++            ProcessStartInfo patchLibcryptoProcessStartInfo = new ProcessStartInfo
++            {
++                UseShellExecute = false,
++                WorkingDirectory = gameDirectory,
++                FileName = "patchelf"
++                Arguments = $"--replace-needed libcrypto.so.1.0.0 libcrypto.so {gameDirectory}/runner"
++            };
++
++            patchLibcryptoProcessStartInfo.Start();
++            patchLibcryptoProcessStartInfo.WaitForExit();
++
+             process.Start();
+             if (useLogging)
+             {
+@@ -867,4 +878,4 @@ public static class Profile
+ 
+         log.Info($"Profile {profile.Name} process exited.");
+     }
+-}
+\ No newline at end of file
++}
