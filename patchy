@@ -1,8 +1,8 @@
 diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-index 69e875e..f4856a6 100644
+index 69e875e..feff39b 100644
 --- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
 +++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-@@ -819,6 +819,31 @@ public static class Profile
+@@ -819,6 +819,43 @@ public static class Profile
                  process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
              }
  
@@ -31,10 +31,22 @@ index 69e875e..f4856a6 100644
 +            patchLibcryptoProcess.Start();
 +            patchLibcryptoProcess.WaitForExit();
 +
++            ProcessStartInfo patchLibsslProcessStartInfo = new ProcessStartInfo
++            {
++                UseShellExecute = false,
++                WorkingDirectory = gameDirectory,
++                FileName = "patchelf",
++                Arguments = "--replace-needed libssl.so.1.0.0 libssl.so runner"
++            };
++            Process patchLibsslProcess = new Process();
++            patchLibsslProcess.StartInfo = patchLibsslProcessStartInfo;
++            patchLibsslProcess.Start();
++            patchLibsslProcess.WaitForExit();
++
              process.Start();
              if (useLogging)
              {
-@@ -867,4 +892,4 @@ public static class Profile
+@@ -867,4 +904,4 @@ public static class Profile
  
          log.Info($"Profile {profile.Name} process exited.");
      }

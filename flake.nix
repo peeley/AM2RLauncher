@@ -30,11 +30,9 @@
         gtk3
         libappindicator
         webkitgtk
-        openssl
         fuse2fs
         libnotify
         libgit2
-        xorg.libX11
 
         # needed for 32-bit game binary
         pkgs32.glibc
@@ -44,6 +42,11 @@
         pkgs32.libGL
         pkgs32.openal
         pkgs32.libpulseaudio
+        pkgs32.openssl
+        pkgs32.xorg.libXext
+        pkgs32.xorg.libX11
+        pkgs32.xorg.libXrandr
+        pkgs32.libGLU
       ];
 
       buildInputs = with pkgs; [
