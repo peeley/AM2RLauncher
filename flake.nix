@@ -12,7 +12,7 @@
     pkgs32 = import nixpkgs { system = "i686-linux"; };
   in
   {
-    defaultApp.x86_64-linux = pkgs.buildDotnetModule rec {
+    defaultPackage.x86_64-linux = pkgs.buildDotnetModule rec {
       pname = "AM2RLauncher";
       version = "2.3.0";
       src = ./.;
@@ -25,6 +25,7 @@
       executables = "AM2RLauncher.Gtk";
 
       runtimeDeps = with pkgs; [
+        # needed for launcher
         glibc
         gtk3
         libappindicator
@@ -36,6 +37,9 @@
         libgit2
         openal
         xorg.libX11
+
+        # needed for 32-bit game binary
+        pkgs32.glibc
       ];
 
       buildInputs = with pkgs; [
@@ -44,10 +48,14 @@
         xdelta
       ];
 
-      fixupPhase = ''
-        mkdir -p $out/AM2RLauncher/lib
+      dotnetFlags = [
+        "-p:DefineConstants=\"NOAPPIMAGE\;NOAUTOUPDATE\""
+      ];
 
-        cp $(which xdelta3) $out/AM2RLauncher/lib/xdelta3
+      fixupPhase = ''
+        mkdir -p $out/lib/AM2RLauncher
+
+        cp $(which xdelta3) $out/lib/AM2RLauncher/xdelta3
       '';
 
       desktopItems = [(pkgs.makeDesktopItem {

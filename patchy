@@ -1,11 +1,23 @@
 diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-index 69e875e..8695adc 100644
+index 69e875e..e020332 100644
 --- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
 +++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-@@ -819,6 +819,17 @@ public static class Profile
+@@ -819,6 +819,29 @@ public static class Profile
                  process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
              }
  
++            ProcessStartInfo patchInterpreterProcessStartInfo = new ProcessStartInfo
++            {
++                UseShellExecute = false,
++                WorkingDirectory = gameDirectory,
++                FileName = "patchelf"
++                Arguments = $"--set-interpreter @glibc@/lib/ld-linux-x86-64.so.2 {gameDirectory}/runner"
++            };
++            Process patchInterpreterProcess = new Process();
++            patchInterpreterProcess.Start();
++            patchInterpreterProcess.WaitForExit();
++
++            }
 +            ProcessStartInfo patchLibcryptoProcessStartInfo = new ProcessStartInfo
 +            {
 +                UseShellExecute = false,
@@ -13,14 +25,14 @@ index 69e875e..8695adc 100644
 +                FileName = "patchelf"
 +                Arguments = $"--replace-needed libcrypto.so.1.0.0 libcrypto.so {gameDirectory}/runner"
 +            };
-+
-+            patchLibcryptoProcessStartInfo.Start();
-+            patchLibcryptoProcessStartInfo.WaitForExit();
++            Process patchLibcryptoProcess = new Process();
++            patchLibcryptoProcess.Start();
++            patchLibcryptoProcess.WaitForExit();
 +
              process.Start();
              if (useLogging)
              {
-@@ -867,4 +878,4 @@ public static class Profile
+@@ -867,4 +890,4 @@ public static class Profile
  
          log.Info($"Profile {profile.Name} process exited.");
      }
