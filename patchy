@@ -1,38 +1,40 @@
 diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-index 69e875e..e020332 100644
+index 69e875e..f4856a6 100644
 --- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
 +++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-@@ -819,6 +819,29 @@ public static class Profile
+@@ -819,6 +819,31 @@ public static class Profile
                  process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
              }
  
++            log.Info($"{gameDirectory}/runner");
 +            ProcessStartInfo patchInterpreterProcessStartInfo = new ProcessStartInfo
 +            {
 +                UseShellExecute = false,
 +                WorkingDirectory = gameDirectory,
-+                FileName = "patchelf"
-+                Arguments = $"--set-interpreter @glibc@/lib/ld-linux-x86-64.so.2 {gameDirectory}/runner"
++                FileName = "patchelf",
++                Arguments = "--set-interpreter @glibc@/lib/ld-linux.so.2 runner"
 +            };
 +            Process patchInterpreterProcess = new Process();
++            patchInterpreterProcess.StartInfo = patchInterpreterProcessStartInfo;
 +            patchInterpreterProcess.Start();
 +            patchInterpreterProcess.WaitForExit();
 +
-+            }
 +            ProcessStartInfo patchLibcryptoProcessStartInfo = new ProcessStartInfo
 +            {
 +                UseShellExecute = false,
 +                WorkingDirectory = gameDirectory,
-+                FileName = "patchelf"
-+                Arguments = $"--replace-needed libcrypto.so.1.0.0 libcrypto.so {gameDirectory}/runner"
++                FileName = "patchelf",
++                Arguments = "--replace-needed libcrypto.so.1.0.0 libcrypto.so runner"
 +            };
 +            Process patchLibcryptoProcess = new Process();
++            patchLibcryptoProcess.StartInfo = patchLibcryptoProcessStartInfo;
 +            patchLibcryptoProcess.Start();
 +            patchLibcryptoProcess.WaitForExit();
 +
              process.Start();
              if (useLogging)
              {
-@@ -867,4 +890,4 @@ public static class Profile
+@@ -867,4 +892,4 @@ public static class Profile
  
          log.Info($"Profile {profile.Name} process exited.");
      }

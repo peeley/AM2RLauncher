@@ -12,7 +12,7 @@
     pkgs32 = import nixpkgs { system = "i686-linux"; };
   in
   {
-    defaultPackage.x86_64-linux = pkgs.buildDotnetModule rec {
+    packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
       pname = "AM2RLauncher";
       version = "2.3.0";
       src = ./.;
@@ -33,20 +33,30 @@
         openssl
         fuse2fs
         libnotify
-        libpulseaudio
         libgit2
-        openal
         xorg.libX11
 
         # needed for 32-bit game binary
         pkgs32.glibc
+        pkgs32.stdenv.cc.cc.lib
+        pkgs32.zlib
+        pkgs32.xorg.libXxf86vm
+        pkgs32.libGL
+        pkgs32.openal
+        pkgs32.libpulseaudio
       ];
 
       buildInputs = with pkgs; [
         gtk3
         which
         xdelta
+        patchelf
       ];
+
+      patches = [[(pkgs.substituteAll {
+        src = ./patchy;
+        glibc = pkgs32.glibc;
+      })]];
 
       dotnetFlags = [
         "-p:DefineConstants=\"NOAPPIMAGE\;NOAUTOUPDATE\""
@@ -56,6 +66,7 @@
         mkdir -p $out/lib/AM2RLauncher
 
         cp $(which xdelta3) $out/lib/AM2RLauncher/xdelta3
+        cp $(which patchelf) $out/lib/AM2RLauncher/patchelf
       '';
 
       desktopItems = [(pkgs.makeDesktopItem {
@@ -81,6 +92,12 @@
         mainProgram = "AM2RLauncher.Gtk";
         platforms = platforms.linux;
       };
+    };
+
+    devShells.x86_64-linux.default = pkgs.mkShell {
+      buildInputs = [
+        pkgs.omnisharp-roslyn
+      ];
     };
   };
 }
