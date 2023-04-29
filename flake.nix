@@ -51,9 +51,6 @@
 
       buildInputs = with pkgs; [
         gtk3
-        which
-        xdelta
-        patchelf
       ];
 
       patches = [[(pkgs.substituteAll {
@@ -62,14 +59,22 @@
       })]];
 
       dotnetFlags = [
-        "-p:DefineConstants=\"NOAPPIMAGE\;NOAUTOUPDATE\""
+        "-p:DefineConstants=\"NOAUTOUPDATE\""
       ];
 
-      fixupPhase = ''
-        mkdir -p $out/lib/AM2RLauncher
+      postFixup = with pkgs; ''
+        wrapProgram $out/bin/AM2RLauncher.Gtk \
+          --prefix PATH : ${lib.makeBinPath [
+            xdelta
+            appimage-run
+            file
+            busybox
+            openjdk
+          ]} \
+          # need to unset this for appimage creation \
+          --unset SOURCE_DATE_EPOCH
 
-        cp $(which xdelta3) $out/lib/AM2RLauncher/xdelta3
-        cp $(which patchelf) $out/lib/AM2RLauncher/patchelf
+         ln -s ${pkgs32.glibc}/lib/ld-linux.so.2 $out/lib/ld-linux.so.2
       '';
 
       desktopItems = [(pkgs.makeDesktopItem {
@@ -99,6 +104,7 @@
 
     devShells.x86_64-linux.default = pkgs.mkShell {
       buildInputs = [
+        pkgs.dotnet-sdk
         pkgs.omnisharp-roslyn
       ];
     };
