@@ -10,6 +10,13 @@
   let
     pkgs = import nixpkgs { system = "x86_64-linux"; };
     pkgs32 = import nixpkgs { system = "i686-linux"; };
+    openssl' = import ./openssl.nix {
+      stdenv = pkgs.stdenv;
+      lib = pkgs.lib;
+      fetchFromGitHub = pkgs.fetchFromGitHub;
+      perl = pkgs32.perl;
+      buildPackages = pkgs32.buildPackages;
+    };
   in
   {
     packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
@@ -47,6 +54,7 @@
         pkgs32.xorg.libX11
         pkgs32.xorg.libXrandr
         pkgs32.libGLU
+        openssl'
       ];
 
       buildInputs = with pkgs; [
@@ -59,7 +67,7 @@
       })]];
 
       dotnetFlags = [
-        "-p:DefineConstants=\"NOAUTOUPDATE\""
+        "-p:DefineConstants=\"NOAPPIMAGE;NOAUTOUPDATE\""
       ];
 
       postFixup = with pkgs; ''
@@ -71,10 +79,6 @@
             busybox
             openjdk
           ]} \
-          # need to unset this for appimage creation \
-          --unset SOURCE_DATE_EPOCH
-
-         ln -s ${pkgs32.glibc}/lib/ld-linux.so.2 $out/lib/ld-linux.so.2
       '';
 
       desktopItems = [(pkgs.makeDesktopItem {

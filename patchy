@@ -1,27 +1,27 @@
 diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-index 69e875e..f7c3fb3 100644
+index 69e875e..a7b0885 100644
 --- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
 +++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-@@ -503,7 +503,7 @@ public static class Profile
-             Directory.SetCurrentDirectory(tempPath);
-             Console.SetError(new StreamWriter(Stream.Null));
-             Environment.SetEnvironmentVariable("ARCH", "x86_64");
--            Process.Start($"{Core.PatchDataPath}/utilities/appimagetool-x86_64.AppImage", "-n AM2R.AppDir")?.WaitForExit();
-+            Process.Start("appimage-run", $"{Core.PatchDataPath}/utilities/appimagetool-x86_64.AppImage -n AM2R.AppDir")?.WaitForExit();
-             Directory.SetCurrentDirectory(workingDir);
-             Console.SetError(cliError);
+@@ -819,6 +819,18 @@ public static class Profile
+                 process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
+             }
  
-@@ -777,7 +777,8 @@ public static class Profile
-                 #if NOAPPIMAGE
-                 FileName = $"{gameDirectory}/runner"
-                 #else
--                FileName = $"{gameDirectory}/AM2R.AppImage"
-+                FileName = "appimage-run",
-+                Arguments = $"{gameDirectory}/AM2R.AppImage"
-                 #endif
-             };
-             // This may look unnecessary, but it's actually not. In case that the current process has a custom HOME variable,
-@@ -867,4 +868,4 @@ public static class Profile
++            ProcessStartInfo patchInterpreterProcessStartInfo = new ProcessStartInfo
++            {
++                UseShellExecute = false,
++                WorkingDirectory = gameDirectory,
++                FileName = "patchelf",
++                Arguments = "--set-interpreter @glibc@/lib/ld-linux.so.2 runner"
++            };
++            Process patchInterpreterProcess = new Process();
++            patchInterpreterProcess.StartInfo = patchInterpreterProcessStartInfo;
++            patchInterpreterProcess.Start();
++            patchInterpreterProcess.WaitForExit();
++
+             process.Start();
+             if (useLogging)
+             {
+@@ -867,4 +879,4 @@ public static class Profile
  
          log.Info($"Profile {profile.Name} process exited.");
      }
