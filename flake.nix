@@ -10,13 +10,16 @@
   let
     pkgs = import nixpkgs { system = "x86_64-linux"; };
     pkgs32 = import nixpkgs { system = "i686-linux"; };
-    openssl' = import ./openssl.nix {
-      stdenv = pkgs.stdenv;
-      lib = pkgs.lib;
-      fetchFromGitHub = pkgs.fetchFromGitHub;
-      perl = pkgs32.perl;
-      buildPackages = pkgs32.buildPackages;
-    };
+    pkgsFor32Cross = pkgs.pkgsCross.gnu32;
+    openssl' = (import ./openssl.nix {
+      stdenv = pkgsFor32Cross.stdenv;
+      lib = pkgsFor32Cross.lib;
+      fetchurl = pkgsFor32Cross.fetchurl;
+      cryptodev = pkgsFor32Cross.cryptodev;
+      # fetchFromGitHub = pkgs.fetchFromGitHub;
+      perl = pkgsFor32Cross.perl;
+      buildPackages = pkgsFor32Cross.buildPackages;
+    }).openssl_1_0_2;
   in
   {
     packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
@@ -40,6 +43,7 @@
         fuse2fs
         libnotify
         libgit2
+        openssl
 
         # needed for 32-bit game binary
         pkgs32.glibc
