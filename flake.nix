@@ -1,38 +1,28 @@
 {
-  description = "farts";
+description = "farts";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+inputs = {
+  nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  flake-utils.url = "github:numtide/flake-utils";
+};
 
-  outputs = { self, nixpkgs, flake-utils }:
-  let
-    pkgs = import nixpkgs { system = "x86_64-linux"; };
-    pkgs32 = import nixpkgs { system = "i686-linux"; };
-    pkgsFor32Cross = pkgs.pkgsCross.gnu32;
-    openssl' = (import ./openssl.nix {
-      stdenv = pkgsFor32Cross.stdenv;
-      lib = pkgsFor32Cross.lib;
-      fetchurl = pkgsFor32Cross.fetchurl;
-      cryptodev = pkgsFor32Cross.cryptodev;
-      # fetchFromGitHub = pkgs.fetchFromGitHub;
-      perl = pkgsFor32Cross.perl;
-      buildPackages = pkgsFor32Cross.buildPackages;
-    }).openssl_1_0_2;
-  in
-  {
-    packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
-      pname = "AM2RLauncher";
-      version = "2.3.0";
-      src = ./.;
+outputs = { self, nixpkgs, flake-utils}:
+let
+  pkgs = import nixpkgs { system = "x86_64-linux"; };
+  pkgs32 = import nixpkgs { system = "i686-linux"; };
+in
+{
+  packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
+    pname = "AM2RLauncher";
+    version = "2.3.0";
+    src = ./.;
 
-      projectFile = [
-        "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj"
-      ];
+    projectFile = [
+      "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj"
+    ];
 
-      nugetDeps = ./deps.nix;
-      executables = "AM2RLauncher.Gtk";
+    nugetDeps = ./deps.nix;
+    executables = "AM2RLauncher.Gtk";
 
       runtimeDeps = with pkgs; [
         # needed for launcher
@@ -53,12 +43,12 @@
         pkgs32.libGL
         pkgs32.openal
         pkgs32.libpulseaudio
-        pkgs32.openssl
         pkgs32.xorg.libXext
         pkgs32.xorg.libX11
         pkgs32.xorg.libXrandr
         pkgs32.libGLU
-        openssl'
+        # pkgs32.curl
+        pkgs32.steam-run
       ];
 
       buildInputs = with pkgs; [
@@ -82,6 +72,7 @@
             file
             busybox
             openjdk
+            steam-run
           ]} \
       '';
 

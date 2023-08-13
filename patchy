@@ -1,27 +1,43 @@
 diff --git a/AM2RLauncher/AM2RLauncherLib/Profile.cs b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-index 69e875e..a7b0885 100644
+index 69e875e..bcfa5bb 100644
 --- a/AM2RLauncher/AM2RLauncherLib/Profile.cs
 +++ b/AM2RLauncher/AM2RLauncherLib/Profile.cs
-@@ -819,6 +819,18 @@ public static class Profile
+@@ -770,12 +770,14 @@ public static class Profile
+                 File.WriteAllText(am2rConfigPath, "[Screen]\nFullscreen=\"0\"\nScale=\"3\"");
+             }
+ 
++            log.Info($"{gameDirectory}");
+             ProcessStartInfo startInfo = new ProcessStartInfo
+             {
+                 UseShellExecute = false,
+                 WorkingDirectory = gameDirectory,
+                 #if NOAPPIMAGE
+-                FileName = $"{gameDirectory}/runner"
++                FileName = "steam-run",
++                Arguments = $"\"{gameDirectory}/runner\""
+                 #else
+                 FileName = $"{gameDirectory}/AM2R.AppImage"
+                 #endif
+@@ -819,6 +821,18 @@ public static class Profile
                  process.ErrorDataReceived += (_, e) => { File.AppendAllText(logFile, $"{e.Data}\n"); };
              }
  
-+            ProcessStartInfo patchInterpreterProcessStartInfo = new ProcessStartInfo
-+            {
++            Process patchLibcryptoProcess = new Process();
++            ProcessStartInfo patchLibcryptoStartInfo = new ProcessStartInfo {
 +                UseShellExecute = false,
 +                WorkingDirectory = gameDirectory,
 +                FileName = "patchelf",
-+                Arguments = "--set-interpreter @glibc@/lib/ld-linux.so.2 runner"
++                Arguments = $"\"{gameDirectory}/runner\" --replace-needed \"libcrypto.so.1.0.0\" \"libcurl.so\" --replace-needed \"libssl.so.1.0.0\" \"libcurl.so\""
 +            };
-+            Process patchInterpreterProcess = new Process();
-+            patchInterpreterProcess.StartInfo = patchInterpreterProcessStartInfo;
-+            patchInterpreterProcess.Start();
-+            patchInterpreterProcess.WaitForExit();
++
++            patchLibcryptoProcess.StartInfo = patchLibcryptoStartInfo;
++            patchLibcryptoProcess.Start();
++            patchLibcryptoProcess.WaitForExit();
 +
              process.Start();
              if (useLogging)
              {
-@@ -867,4 +879,4 @@ public static class Profile
+@@ -867,4 +881,4 @@ public static class Profile
  
          log.Info($"Profile {profile.Name} process exited.");
      }
