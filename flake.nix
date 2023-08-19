@@ -47,8 +47,6 @@ in
         pkgs32.xorg.libX11
         pkgs32.xorg.libXrandr
         pkgs32.libGLU
-        # pkgs32.curl
-        pkgs32.steam-run
       ];
 
       buildInputs = with pkgs; [
@@ -73,6 +71,7 @@ in
             busybox
             openjdk
             steam-run
+            patchelf
           ]} \
       '';
 
