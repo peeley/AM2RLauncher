@@ -53,13 +53,8 @@ in
         gtk3
       ];
 
-      patches = [[(pkgs.substituteAll {
-        src = ./patchy;
-        glibc = pkgs32.glibc;
-      })]];
-
       dotnetFlags = [
-        "-p:DefineConstants=\"NOAPPIMAGE;NOAUTOUPDATE\""
+        "-p:DefineConstants=\"NOAPPIMAGE;NOAUTOUPDATE;PATCHOPENSSL\""
       ];
 
       postFixup = with pkgs; ''
