@@ -61,7 +61,6 @@ in
         wrapProgram $out/bin/AM2RLauncher.Gtk \
           --prefix PATH : ${lib.makeBinPath [
             xdelta
-            appimage-run
             file
             busybox
             openjdk
