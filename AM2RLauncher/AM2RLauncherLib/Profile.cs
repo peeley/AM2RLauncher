@@ -791,14 +791,12 @@ public static class Profile
                 File.WriteAllText(am2rConfigPath, "[Screen]\nFullscreen=\"0\"\nScale=\"3\"");
             }
 
-            log.Info($"{gameDirectory}");
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 UseShellExecute = false,
                 WorkingDirectory = gameDirectory,
                 #if NOAPPIMAGE
-                FileName = "steam-run",
-                Arguments = "./runner"
+                FileName = $"{gameDirectory}/runner",
                 #else
                 FileName = $"{gameDirectory}/AM2R.AppImage"
                 #endif
