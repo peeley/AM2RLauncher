@@ -6,7 +6,7 @@ index 8186350..2f9de2a 100644
                  UseShellExecute = false,
                  WorkingDirectory = gameDirectory,
                  #if NOAPPIMAGE
--                FileName = $"{gameDirectory}/runner",
+-                FileName = $"{gameDirectory}/runner"
 +                FileName = "steam-run",
 +                Arguments = "./runner"
                  #else

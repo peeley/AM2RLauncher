@@ -796,7 +796,7 @@ public static class Profile
                 UseShellExecute = false,
                 WorkingDirectory = gameDirectory,
                 #if NOAPPIMAGE
-                FileName = $"{gameDirectory}/runner",
+                FileName = $"{gameDirectory}/runner"
                 #else
                 FileName = $"{gameDirectory}/AM2R.AppImage"
                 #endif

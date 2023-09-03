@@ -71,9 +71,8 @@ public static class CrossPlatformOperations
         {
             return new List<string>
             {
-                "https://github.com/peeley/AM2R-Autopatcher-Linux.git",
-                // "https://github.com/AM2R-Community-Developers/AM2R-Autopatcher-Linux.git",
-                // "https://gitlab.com/am2r-community-developers/AM2R-Autopatcher-Linux.git"
+                "https://github.com/AM2R-Community-Developers/AM2R-Autopatcher-Linux.git",
+                "https://gitlab.com/am2r-community-developers/AM2R-Autopatcher-Linux.git"
             };
         }
         if (OS.IsMac)
