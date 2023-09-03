@@ -53,6 +53,10 @@ in
         gtk3
       ];
 
+      patches = [[(pkgs.substituteAll {
+        src = ./replace-openssl-1.0.0.patch;
+      })]];
+
       dotnetFlags = [
         "-p:DefineConstants=\"NOAPPIMAGE;NOAUTOUPDATE;PATCHOPENSSL\""
       ];
