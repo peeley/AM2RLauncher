@@ -10,93 +10,86 @@ outputs = { self, nixpkgs, flake-utils}:
 let
   pkgs = import nixpkgs { system = "x86_64-linux"; };
   pkgs32 = import nixpkgs { system = "i686-linux"; };
+  am2r-run = pkgs32.buildFHSEnv {
+    name = "am2r-run";
+
+    targetPkgs = pkgs:
+      with pkgs; [
+        stdenv.cc.cc.lib
+        xorg.libX11
+        xorg.libXext
+        xorg.libXrandr
+        xorg.libXxf86vm
+        curl
+        libGLU
+        libglvnd
+        openal
+        zlib
+      ];
+
+    runScript = pkgs.writeShellScript "am2r-run" ''
+      exec -- "$1" "$@"
+    '';
+  };
 in
 {
   packages.x86_64-linux.default = pkgs.buildDotnetModule rec {
-    pname = "AM2RLauncher";
+    pname = "am2r-launcher";
     version = "2.3.0";
     src = ./.;
 
-    projectFile = [
-      "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj"
-    ];
+    projectFile = "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj";
 
     nugetDeps = ./deps.nix;
     executables = "AM2RLauncher.Gtk";
 
-      runtimeDeps = with pkgs; [
-        # needed for launcher
-        glibc
-        gtk3
-        libappindicator
-        webkitgtk
-        fuse2fs
-        libnotify
-        libgit2
-        openssl
+    runtimeDeps = with pkgs; [
+      glibc
+      gtk3
+      libappindicator
+      webkitgtk
+      e2fsprogs
+      libnotify
+      libgit2
+      openssl
+      glib-networking
+    ];
 
-        # needed for 32-bit game binary
-        pkgs32.glibc
-        pkgs32.stdenv.cc.cc.lib
-        pkgs32.zlib
-        pkgs32.xorg.libXxf86vm
-        pkgs32.libGL
-        pkgs32.openal
-        pkgs32.libpulseaudio
-        pkgs32.xorg.libXext
-        pkgs32.xorg.libX11
-        pkgs32.xorg.libXrandr
-        pkgs32.libGLU
-      ];
+    buildInputs = with pkgs; [ gtk3 ];
 
-      buildInputs = with pkgs; [
-        gtk3
-      ];
+    patches = [ ./am2r-run-binary.patch ];
 
-      patches = [[(pkgs.substituteAll {
-        src = ./replace-openssl-1.0.0.patch;
-      })]];
+    dotnetFlags =
+      [ ''-p:DefineConstants="NOAPPIMAGE;NOAUTOUPDATE;PATCHOPENSSL"'' ];
 
-      dotnetFlags = [
-        "-p:DefineConstants=\"NOAPPIMAGE;NOAUTOUPDATE;PATCHOPENSSL\""
-      ];
+    postFixup = with pkgs; ''
+       wrapProgram $out/bin/AM2RLauncher.Gtk \
+            --prefix PATH : ${
+              pkgs.lib.makeBinPath [ am2r-run xdelta file busybox openjdk patchelf ]
+            }
 
-      postFixup = with pkgs; ''
-        wrapProgram $out/bin/AM2RLauncher.Gtk \
-          --prefix PATH : ${lib.makeBinPath [
-            xdelta
-            file
-            busybox
-            openjdk
-            steam-run
-            patchelf
-          ]} \
-      '';
+               mkdir -p $out/share/icons
+                  install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.png $out/share/icons/AM2RLauncher.png
+                     install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.desktop $out/share/applications/AM2RLauncher.desktop
 
-      desktopItems = [(pkgs.makeDesktopItem {
-        desktopName = "AM2R Launcher";
-        name = "am2rlauncher";
-        exec = "AM2Rlauncher.Gtk";
-        icon = "";
-        comment = meta.description;
-        type = "Application";
-        categories = [ "Game" ];
-      })];
+                        # renames binary for desktop file
+                           mv $out/bin/AM2RLauncher.Gtk $out/bin/AM2RLauncher
+                            '';
 
-      meta = with pkgs.lib; {
-        homepage = "https://github.com/AM2R-Community-Developers/AM2RLauncher";
-        description = "A front-end for dealing with AM2R updates and mods";
-        longDescription = ''
-          A front-end application that simplifies installing the latest
-          AM2R-Community-Updates, creating APKs for Android use, as well as Mods for
-          AM2R.
-        '';
-        license = licenses.gpl3Only;
-        maintainers = with maintainers; [ nsnelson ];
-        mainProgram = "AM2RLauncher.Gtk";
-        platforms = platforms.linux;
-      };
-    };
+    meta = with pkgs.lib; {
+      homepage = "https://github.com/AM2R-Community-Developers/AM2RLauncher";
+      description = "A front-end for dealing with AM2R updates and mods";
+      longDescription = ''
+           A front-end application that simplifies installing the latest
+                AM2R-Community-Updates, creating APKs for Android use, as well as Mods for
+                     AM2R.
+                        '';
+      license = licenses.gpl3Only;
+      maintainers = with maintainers; [ nsnelson ];
+      mainProgram = "AM2RLauncher";
+      platforms = platforms.linux;
+  };
+  };
 
     devShells.x86_64-linux.default = pkgs.mkShell {
       buildInputs = [
